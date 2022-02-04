@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login_signup/src/Widget/bezierContainer.dart';
 import 'package:flutter_login_signup/src/loginPage.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert' show json, base64, ascii;
+import 'package:email_validator/email_validator.dart';
+
+import 'constants/color_constant.dart';
+
+const SERVER_IP = 'http://10.0.2.2:8080/api/auth';
+final storage = FlutterSecureStorage();
 
 class SignUpPage extends StatefulWidget {
   SignUpPage({Key? key, this.title}) : super(key: key);
@@ -13,6 +21,42 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  String _rolesController = "passenger";
+  // Initial Selected Value
+  String dropdownvalue = 'passenger';
+
+  // List of items in our dropdown menu
+  var items = [
+    'passenger',
+    'admin',
+  ];
+
+  void displayDialog(BuildContext context, String title, String text) =>
+      showDialog(
+        context: context,
+        builder: (context) =>
+            AlertDialog(title: Text(title), content: Text(text)),
+      );
+
+  Future<int> attemptSignUp(
+      String username, String email, String roles, String password) async {
+    var res = await http.post(Uri.parse("$SERVER_IP/signup"),
+        headers: {
+          "Content-type": "application/json",
+          "Accept": "application/json",
+          "charset": "utf-8"
+        },
+        body: json.encode({
+          "username": username,
+          "password": password,
+          "email": email,
+        }));
+    return res.statusCode;
+  }
+
   Widget _backButton() {
     return InkWell(
       onTap: () {
@@ -30,55 +74,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500))
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _entryField(String title, {bool isPassword = false}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          TextField(
-              obscureText: isPassword,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  fillColor: Color(0xfff3f3f4),
-                  filled: true))
-        ],
-      ),
-    );
-  }
-
-  Widget _submitButton() {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: EdgeInsets.symmetric(vertical: 15),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(5)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-                color: Colors.grey.shade200,
-                offset: Offset(2, 4),
-                blurRadius: 5,
-                spreadRadius: 2)
-          ],
-          gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [Color(0xfffbb448), Color(0xfff7892b)])),
-      child: Text(
-        'Register Now',
-        style: TextStyle(fontSize: 20, color: Colors.white),
       ),
     );
   }
@@ -106,9 +101,7 @@ class _SignUpPageState extends State<SignUpPage> {
             Text(
               'Login',
               style: TextStyle(
-                  color: Color(0xfff79c4f),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
+                  color: mBlueColor, fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -122,29 +115,17 @@ class _SignUpPageState extends State<SignUpPage> {
       text: TextSpan(
           text: 'A',
           style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w700,
-              color: Color(0xffe46b10)),
+              fontSize: 30, fontWeight: FontWeight.w700, color: mBlueColor),
           children: [
             TextSpan(
               text: 'ir',
-              style: TextStyle(color: Colors.black, fontSize: 30),
+              style: TextStyle(color: mTitleColor, fontSize: 30),
             ),
             TextSpan(
               text: 'Flex',
-              style: TextStyle(color: Color(0xffe46b10), fontSize: 30),
+              style: TextStyle(color: mBlueColor, fontSize: 30),
             ),
           ]),
-    );
-  }
-
-  Widget _emailPasswordWidget() {
-    return Column(
-      children: <Widget>[
-        _entryField("Username"),
-        _entryField("Email id"),
-        _entryField("Password", isPassword: true),
-      ],
     );
   }
 
@@ -173,12 +154,160 @@ class _SignUpPageState extends State<SignUpPage> {
                     SizedBox(
                       height: 50,
                     ),
-                    _emailPasswordWidget(),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "Username",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          TextField(
+                              controller: _usernameController,
+                              obscureText: false,
+                              decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  fillColor: Color(0xfff3f3f4),
+                                  filled: true))
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "Email",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          TextField(
+                              controller: _emailController,
+                              obscureText: false,
+                              decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  fillColor: Color(0xfff3f3f4),
+                                  filled: true))
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "Password",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          TextField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  fillColor: Color(0xfff3f3f4),
+                                  filled: true))
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          DropdownButton(
+                            value: dropdownvalue,
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            items: items.map((String items) {
+                              return DropdownMenuItem(
+                                value: items,
+                                child: Text(items),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                dropdownvalue = newValue!;
+                                _rolesController = newValue;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                     SizedBox(
                       height: 20,
                     ),
-                    _submitButton(),
-                    SizedBox(height: height * .14),
+                    InkWell(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
+                              boxShadow: <BoxShadow>[
+                                BoxShadow(
+                                    color: Colors.grey.shade200,
+                                    offset: Offset(2, 4),
+                                    blurRadius: 5,
+                                    spreadRadius: 2)
+                              ],
+                              gradient: LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [mBlueColor, mBorderColor])),
+                          child: Text(
+                            'Register Now',
+                            style: TextStyle(fontSize: 20, color: Colors.white),
+                          ),
+                        ),
+                        onTap: () async {
+                          var username = _usernameController.text;
+                          var password = _passwordController.text;
+                          var email = _emailController.text;
+                          var roles = _rolesController;
+
+                          if (username.length < 4)
+                            displayDialog(context, "Invalid Username",
+                                "The username should be at least 4 characters long");
+                          else if (password.length < 4)
+                            displayDialog(context, "Invalid Password",
+                                "The password should be at least 4 characters long");
+                          else {
+                            var res = await attemptSignUp(
+                                username, email, roles, password);
+                            if (res == 200) {
+                              displayDialog(context, "Success",
+                                  "The user was created. Log in now.");
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => LoginPage()));
+                            } else if (res == 400)
+                              displayDialog(
+                                  context,
+                                  "That username is already registered",
+                                  "Please try to sign up using another username or log in if you already have an account.");
+                            else {
+                              displayDialog(context, "Error",
+                                  "An unknown error occurred.");
+                            }
+                          }
+                        }),
+                    SizedBox(height: 20),
                     _loginAccountLabel(),
                   ],
                 ),

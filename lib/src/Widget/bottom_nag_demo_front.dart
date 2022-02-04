@@ -10,7 +10,6 @@ class BottomNavigationDemo extends StatefulWidget {
 
 class _BottomNavigationDemoState extends State<BottomNavigationDemo> {
   int _selectedIndex = 0;
-
   var bottomTextStyle =
       GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500);
 

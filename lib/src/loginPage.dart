@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_login_signup/src/boiler.dart';
+import 'package:flutter_login_signup/src/constants/color_constant.dart';
 import 'package:flutter_login_signup/src/signup.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -164,9 +166,7 @@ class _LoginPageState extends State<LoginPage> {
             Text(
               'Register',
               style: TextStyle(
-                  color: Color(0xfff79c4f),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
+                  color: mBlueColor, fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -180,17 +180,15 @@ class _LoginPageState extends State<LoginPage> {
       text: TextSpan(
           text: 'A',
           style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w700,
-              color: Color(0xffe46b10)),
+              fontSize: 30, fontWeight: FontWeight.w700, color: mBlueColor),
           children: [
             TextSpan(
               text: 'ir',
-              style: TextStyle(color: Colors.black, fontSize: 30),
+              style: TextStyle(color: mTitleColor, fontSize: 30),
             ),
             TextSpan(
               text: 'Flex',
-              style: TextStyle(color: Color(0xffe46b10), fontSize: 30),
+              style: TextStyle(color: mBlueColor, fontSize: 30),
             ),
           ]),
     );
@@ -283,10 +281,10 @@ class _LoginPageState extends State<LoginPage> {
                           gradient: LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
-                              colors: [Color(0xfffbb448), Color(0xfff7892b)])),
+                              colors: [mBlueColor, mBorderColor])),
                       child: Text(
                         'Login',
-                        style: TextStyle(fontSize: 20, color: Colors.white),
+                        style: TextStyle(fontSize: 20, color: mFillColor),
                       ),
                     ),
                     onTap: () async {
@@ -298,8 +296,7 @@ class _LoginPageState extends State<LoginPage> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    HomeScreen.fromBase64(jwt)));
+                                builder: (context) => Boiler.fromBase64(jwt)));
                       } else {
                         displayDialog(context, "An Error Occurred",
                             "No account was found matching that username and password");
