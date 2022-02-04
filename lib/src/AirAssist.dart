@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_login_signup/src/ChatPage.dart';
 import 'package:flutter_svg/svg.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
@@ -192,6 +193,14 @@ class _AirAssistState extends State<AirAssist> {
               ),
             ],
           ),
+        ),
+        SizedBox(height: 10),
+        ButtonCard(
+          press: () async {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => ChatPage()));
+          },
+          title: 'Lets Discuss!',
         ),
       ],
     );
